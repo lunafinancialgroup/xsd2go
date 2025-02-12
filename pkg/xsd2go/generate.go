@@ -11,7 +11,7 @@ import (
 
 func Convert(xsdPath, goModule, outputDir string, xmlnsOverrides []string, templateNames []string, outputFile string) error {
 	if len(templateNames) == 0 {
-		templateNames = []string{"/pkg/template/types.tmpl"}
+		templateNames = []string{"../pkg/template/types.tmpl"}
 	}
 	for _, templateName := range templateNames {
 		if strings.Contains(templateName, ".tgo") {

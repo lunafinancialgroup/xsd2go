@@ -19,11 +19,13 @@ func TestSanity(t *testing.T) {
 	assert.NotEmpty(t, xsdFiles)
 
 	for _, xsdPath := range xsdFiles {
-		actual := assertConvertsFine(t, xsdPath)
+		t.Run(xsdPath, func(t *testing.T) {
+			actual := assertConvertsFine(t, xsdPath)
 
-		expected, err := ioutil.ReadFile(xsdPath + ".out")
-		require.NoError(t, err)
-		assert.Equal(t, string(expected), string(actual))
+			expected, err := ioutil.ReadFile(xsdPath + ".out")
+			require.NoError(t, err)
+			require.Equal(t, string(expected), string(actual))
+		})
 	}
 }
 
@@ -36,7 +38,7 @@ func assertConvertsFine(t *testing.T, xsdPath string) []byte {
 
 	goModule := "user.com/private"
 
-	err = xsd2go.Convert(xsdPath, goModule, outputDir, nil, []string{"/pkg/template/types.tmpl"}, "models.go")
+	err = xsd2go.Convert(xsdPath, goModule, outputDir, nil, []string{"../pkg/template/types.tmpl"}, "models.go")
 	require.NoError(t, err)
 
 	generatedFilePath, err := locateGeneratedFile(outputDir)

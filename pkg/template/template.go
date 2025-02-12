@@ -11,7 +11,6 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/markbates/pkger"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 
@@ -77,9 +76,5 @@ func newTemplate(templateName string) (*template.Template, error) {
 
 // getFile returns a fs.File either using pkger or the OS. This allows for templates outside the packaged program to be used.
 func getFile(templateName string) (fs.File, error) {
-	file, err := pkger.Open(templateName)
-	if err == nil {
-		return file, err
-	}
 	return os.Open(templateName)
 }
