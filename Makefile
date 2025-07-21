@@ -31,7 +31,7 @@ vendor:
 	$(GO) mod verify
 
 test:
-	$(GO) test -v github.com/moov-io/xsd2go/... -count=1 -p 1 -parallel 1
+	$(GO) test -v github.com/lunafinancialgroup/xsd2go/... -count=1 -p 1 -parallel 1
 
 .PHONY: check
 check:

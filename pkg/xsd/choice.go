@@ -27,6 +27,9 @@ func (c *Choice) compile(sch *Schema, parentElement *Element) {
 		if el.MinOccurs == "" {
 			el.MinOccurs = "0"
 		}
+		if len(c.ElementList) == 1 && len(c.Sequences) == 0 {
+			el.MinOccurs = "1"
+		}
 	}
 
 	c.allElements = c.ElementList
