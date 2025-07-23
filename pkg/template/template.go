@@ -14,7 +14,7 @@ import (
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 
-	"github.com/moov-io/xsd2go/pkg/xsd"
+	"github.com/lunafinancialgroup/xsd2go/pkg/xsd"
 )
 
 func GenerateTypes(schema *xsd.Schema, outputDir string, outputFile string, templateName string) error {

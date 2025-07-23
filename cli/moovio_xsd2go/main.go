@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/moov-io/xsd2go/cli/cmd"
+	"github.com/lunafinancialgroup/xsd2go/cli/cmd"
 )
 
 func main() {

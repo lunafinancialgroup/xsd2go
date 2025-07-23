@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/moov-io/xsd2go/pkg/xsd2go"
+	"github.com/lunafinancialgroup/xsd2go/pkg/xsd2go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

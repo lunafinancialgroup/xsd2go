@@ -5,8 +5,8 @@ import (
 	"path"
 	"strings"
 
-	"github.com/moov-io/xsd2go/pkg/template"
-	"github.com/moov-io/xsd2go/pkg/xsd"
+	"github.com/lunafinancialgroup/xsd2go/pkg/template"
+	"github.com/lunafinancialgroup/xsd2go/pkg/xsd"
 )
 
 func Convert(xsdPath, goModule, outputDir string, xmlnsOverrides []string, templateNames []string, outputFile string) error {
