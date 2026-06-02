@@ -23,8 +23,18 @@ type Element struct {
 	ComplexType     *ComplexType `xml:"complexType"`
 	SimpleType      *SimpleType  `xml:"simpleType"`
 	schema          *Schema      `xml:"-"`
-	typ             Type         `xml:"-"`
-	Doc             []string     `xml:"annotation>documentation"`
+	typ             Type            `xml:"-"`
+	Doc             []Documentation `xml:"annotation>documentation"`
+}
+
+func (e *Element) Definition() string {
+	if def := definition(e.Doc); def != "" {
+		return def
+	}
+	if e.refElm != nil {
+		return definition(e.refElm.Doc)
+	}
+	return ""
 }
 
 func (e *Element) Attributes() []Attribute {
