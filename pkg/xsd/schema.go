@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 
+	"github.com/iancoleman/strcase"
 	"golang.org/x/net/html/charset"
 )
 
@@ -28,6 +30,7 @@ type Schema struct {
 	filePath              string             `xml:"-"`
 	inlinedElements       []Element          `xml:"-"`
 	goPackageNameOverride string             `xml:"-"`
+	alignTypeNames        map[string]bool    `xml:"-"`
 }
 
 func parseSchema(f io.Reader) (*Schema, error) {
@@ -50,7 +53,40 @@ func (sch *Schema) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	return d.DecodeElement(ss, &start)
 }
 
+// typeVariantSuffixRe matches the ISO 20022 enriched-schema disambiguation
+// suffix (double underscore + digits, e.g. "AccountIdentification4Choice__1").
+var typeVariantSuffixRe = regexp.MustCompile(`__\d+$`)
+
+// alignTypeNamesTo makes each complexType/simpleType render under the Go type
+// name a prior release used, when one exists. For a type whose default Go name
+// is absent from alignNames but whose "__N"-suffix-stripped name is present, it
+// pins the stripped name; types already matching, and genuinely new types, are
+// left untouched. This reproduces the prior release's (internally inconsistent)
+// suffixing so downstream imports can switch package paths without renaming.
+func (sch *Schema) alignTypeNamesTo(alignNames map[string]bool) {
+	if len(alignNames) == 0 {
+		return
+	}
+	pin := func(name string) string {
+		if alignNames[strcase.ToCamel(name)] {
+			return ""
+		}
+		if stripped := typeVariantSuffixRe.ReplaceAllString(name, ""); stripped != name &&
+			alignNames[strcase.ToCamel(stripped)] {
+			return stripped
+		}
+		return ""
+	}
+	for idx := range sch.ComplexTypes {
+		sch.ComplexTypes[idx].goNameOverride = pin(sch.ComplexTypes[idx].Name)
+	}
+	for idx := range sch.SimpleTypes {
+		sch.SimpleTypes[idx].goNameOverride = pin(sch.SimpleTypes[idx].Name)
+	}
+}
+
 func (sch *Schema) compile() {
+	sch.alignTypeNamesTo(sch.alignTypeNames)
 	for idx := range sch.Elements {
 		el := &sch.Elements[idx]
 		el.compile(sch, nil)

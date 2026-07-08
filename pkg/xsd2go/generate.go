@@ -9,7 +9,7 @@ import (
 	"github.com/lunafinancialgroup/xsd2go/pkg/xsd"
 )
 
-func Convert(xsdPath, goModule, outputDir string, xmlnsOverrides []string, templateNames []string, outputFile string) error {
+func Convert(xsdPath, goModule, outputDir string, xmlnsOverrides []string, templateNames []string, outputFile string, alignNamesFile string) error {
 	if len(templateNames) == 0 {
 		templateNames = []string{"../pkg/template/types.tmpl"}
 	}
@@ -33,7 +33,7 @@ func Convert(xsdPath, goModule, outputDir string, xmlnsOverrides []string, templ
 			outputFile,
 		)
 
-		ws, err := xsd.NewWorkspace(fmt.Sprintf("%s/%s", goModule, outputDir), xsdPath, xmlnsOverrides)
+		ws, err := xsd.NewWorkspace(fmt.Sprintf("%s/%s", goModule, outputDir), xsdPath, xmlnsOverrides, alignNamesFile)
 		if err != nil {
 			return err
 		}

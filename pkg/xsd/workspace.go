@@ -4,15 +4,37 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 )
+
+// loadAlignNames reads a newline-separated list of Go type names that generated
+// types should be aligned to (see Schema.alignTypeNamesTo). An empty path
+// disables alignment.
+func loadAlignNames(path string) (map[string]bool, error) {
+	if path == "" {
+		return nil, nil
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("reading align-names file %q: %w", path, err)
+	}
+	names := map[string]bool{}
+	for _, line := range strings.Split(string(data), "\n") {
+		if name := strings.TrimSpace(line); name != "" {
+			names[name] = true
+		}
+	}
+	return names, nil
+}
 
 type Workspace struct {
 	Cache          map[string]*Schema
 	GoModulesPath  string
 	xmlnsOverrides xmlnsOverrides
+	alignTypeNames map[string]bool
 }
 
-func NewWorkspace(goModulesPath, xsdPath string, xmlnsOverrides []string) (*Workspace, error) {
+func NewWorkspace(goModulesPath, xsdPath string, xmlnsOverrides []string, alignNamesFile string) (*Workspace, error) {
 
 	ws := Workspace{
 		Cache:         map[string]*Schema{},
@@ -20,6 +42,10 @@ func NewWorkspace(goModulesPath, xsdPath string, xmlnsOverrides []string) (*Work
 	}
 	var err error
 	ws.xmlnsOverrides, err = ParseXmlnsOverrides(xmlnsOverrides)
+	if err != nil {
+		return nil, err
+	}
+	ws.alignTypeNames, err = loadAlignNames(alignNamesFile)
 	if err != nil {
 		return nil, err
 	}
@@ -60,6 +86,7 @@ func (ws *Workspace) loadXsd(xsdPath string, cache bool) (*Schema, error) {
 	schema.ModulesPath = ws.GoModulesPath
 	schema.filePath = xsdPath
 	schema.goPackageNameOverride = ws.xmlnsOverrides.override(schema.TargetNamespace)
+	schema.alignTypeNames = ws.alignTypeNames
 	// Won't cache included schemas - we need to append contents to the current
 	// schema.
 	if cache {

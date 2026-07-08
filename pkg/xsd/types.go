@@ -44,6 +44,7 @@ func setXmlNameAnyForSingleElements(elements []Element) []Element {
 type ComplexType struct {
 	XMLName          xml.Name        `xml:"http://www.w3.org/2001/XMLSchema complexType"`
 	Name             string          `xml:"name,attr"`
+	goNameOverride   string          `xml:"-"`
 	Mixed            bool            `xml:"mixed,attr"`
 	AttributesDirect []Attribute     `xml:"attribute"`
 	Sequence         *Sequence       `xml:"sequence"`
@@ -90,6 +91,9 @@ func (ct *ComplexType) Elements() []Element {
 }
 
 func (ct *ComplexType) GoName() string {
+	if ct.goNameOverride != "" {
+		return strcase.ToCamel(ct.goNameOverride)
+	}
 	return strcase.ToCamel(ct.Name)
 }
 
@@ -169,11 +173,12 @@ func (ct *ComplexType) compile(sch *Schema, parentElement *Element) {
 }
 
 type SimpleType struct {
-	XMLName     xml.Name        `xml:"http://www.w3.org/2001/XMLSchema simpleType"`
-	Name        string          `xml:"name,attr"`
-	Restriction *Restriction    `xml:"restriction"`
-	schema      *Schema         `xml:"-"`
-	Doc         []Documentation `xml:"annotation>documentation"`
+	XMLName        xml.Name        `xml:"http://www.w3.org/2001/XMLSchema simpleType"`
+	Name           string          `xml:"name,attr"`
+	goNameOverride string          `xml:"-"`
+	Restriction    *Restriction    `xml:"restriction"`
+	schema         *Schema         `xml:"-"`
+	Doc            []Documentation `xml:"annotation>documentation"`
 }
 
 func (st *SimpleType) Definition() string {
@@ -181,6 +186,9 @@ func (st *SimpleType) Definition() string {
 }
 
 func (st *SimpleType) GoName() string {
+	if st.goNameOverride != "" {
+		return strcase.ToCamel(st.goNameOverride)
+	}
 	return strcase.ToCamel(st.Name)
 }
 
