@@ -41,7 +41,7 @@ var convert = cli.Command{
 	},
 	Action: func(c *cli.Context) error {
 		xsdFile, goModule, outputDir := c.Args()[0], c.Args()[1], c.Args()[2]
-		err := xsd2go.Convert(xsdFile, goModule, outputDir, c.StringSlice("xmlns-override"), c.StringSlice("template-name"), c.String("output-file"))
+		err := xsd2go.Convert(xsdFile, goModule, outputDir, c.StringSlice("xmlns-override"), c.StringSlice("template-name"), c.String("output-file"), c.String("align-names-file"))
 		if err != nil {
 			return cli.NewExitError(err, 1)
 		}
@@ -60,6 +60,10 @@ var convert = cli.Command{
 		cli.StringSliceFlag{
 			Name:  "xmlns-override",
 			Usage: "Allows to explicitly set gopackage name for given XMLNS. Example: --xmlns-override='http://www.w3.org/2000/09/xmldsig#=xml_signatures'",
+		},
+		cli.StringFlag{
+			Name:  "align-names-file",
+			Usage: "Path to a newline-separated list of Go type names to align generated type names to (drops '__N' suffixes to match a prior release). Example: --align-names-file='gen/pacs_008_001_08/names.txt'",
 		},
 	},
 }

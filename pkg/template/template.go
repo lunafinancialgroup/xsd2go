@@ -54,6 +54,30 @@ func GenerateTypes(schema *xsd.Schema, outputDir string, outputFile string, temp
 	return nil
 }
 
+// gen1CPMITextTypes are the shared text types whose Validate enforces the 2026
+// CPMI charset. For gen1 (2025) output the generated code must call ValidateV1
+// (length only) instead, so a pre-cutover payload is not rejected by the stricter
+// 2026 charset.
+var gen1CPMITextTypes = map[string]bool{
+	"Max4Text": true, "Max10Text": true, "Max16Text": true, "Max34Text": true,
+	"Max35Text": true, "Max70Text": true, "Max105Text": true, "Max140Text": true,
+	"Max350Text": true, "Max500Text": true, "Max2048Text": true,
+	"Max4TextCPMI": true, "Max10TextCPMI": true, "Max16TextCPMI": true,
+	"Max34TextCPMI": true, "Max35TextCPMI": true, "Max70TextCPMI": true,
+	"Max105TextCPMI": true, "Max140TextCPMI": true, "Max350TextCPMI": true,
+	"Max500TextCPMI": true, "Max2048TextCPMI": true,
+}
+
+// validateFn returns the validation method name to call on a field of type
+// goTypeName: ValidateV1 for a shared CPMI text type in gen1 (2025) output,
+// Validate otherwise (gen2 and all non-text types).
+func validateFn(modulesPath, goTypeName string) string {
+	if strings.HasSuffix(modulesPath, "/gen") && gen1CPMITextTypes[goTypeName] {
+		return "ValidateV1"
+	}
+	return "Validate"
+}
+
 func newTemplate(templateName string) (*template.Template, error) {
 	in, err := getFile(templateName)
 	if err != nil {
@@ -67,10 +91,11 @@ func newTemplate(templateName string) (*template.Template, error) {
 	}
 
 	return template.New(templateName).Funcs(template.FuncMap{
-		"title": cases.Title(language.AmericanEnglish).String,
-		"upper": strings.ToUpper,
-		"lower": strings.ToLower,
-		"split": strings.Split,
+		"title":      cases.Title(language.AmericanEnglish).String,
+		"upper":      strings.ToUpper,
+		"lower":      strings.ToLower,
+		"split":      strings.Split,
+		"validateFn": validateFn,
 	}).Parse(string(tempText))
 }
 
