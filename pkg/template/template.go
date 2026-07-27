@@ -54,25 +54,24 @@ func GenerateTypes(schema *xsd.Schema, outputDir string, outputFile string, temp
 	return nil
 }
 
-// gen1CPMITextTypes are the shared text types whose Validate enforces the 2026
-// CPMI charset. For gen1 (2025) output the generated code must call ValidateV1
-// (length only) instead, so a pre-cutover payload is not rejected by the stricter
-// 2026 charset.
-var gen1CPMITextTypes = map[string]bool{
+// lengthOnlyTextTypes are the shared text types whose fields are validated for
+// length only, without the 2026 CPMI charset. A field lands here when its XSD
+// simpleType is the plain (non-"_CPMI") variant: every text field in gen1
+// (2025), plus the length-only text fields in gen2 messages whose 2026 schema
+// leaves them charset-unrestricted (e.g. pacs.002 MsgId, head.001 Id). The
+// "...CPMI" GoTypeNames are deliberately absent, so a field generated from a
+// "_CPMI" simpleType falls through to Validate (length + CPMI charset).
+var lengthOnlyTextTypes = map[string]bool{
 	"Max4Text": true, "Max10Text": true, "Max16Text": true, "Max34Text": true,
 	"Max35Text": true, "Max70Text": true, "Max105Text": true, "Max140Text": true,
 	"Max350Text": true, "Max500Text": true, "Max2048Text": true,
-	"Max4TextCPMI": true, "Max10TextCPMI": true, "Max16TextCPMI": true,
-	"Max34TextCPMI": true, "Max35TextCPMI": true, "Max70TextCPMI": true,
-	"Max105TextCPMI": true, "Max140TextCPMI": true, "Max350TextCPMI": true,
-	"Max500TextCPMI": true, "Max2048TextCPMI": true,
 }
 
 // validateFn returns the validation method name to call on a field of type
-// goTypeName: ValidateV1 for a shared CPMI text type in gen1 (2025) output,
-// Validate otherwise (gen2 and all non-text types).
+// goTypeName: ValidateV1 (length only) for a plain shared text type, Validate
+// (length + CPMI charset) for the "_CPMI" text types and every other type.
 func validateFn(modulesPath, goTypeName string) string {
-	if strings.HasSuffix(modulesPath, "/gen") && gen1CPMITextTypes[goTypeName] {
+	if lengthOnlyTextTypes[goTypeName] {
 		return "ValidateV1"
 	}
 	return "Validate"
