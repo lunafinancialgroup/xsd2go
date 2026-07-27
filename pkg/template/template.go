@@ -68,11 +68,11 @@ var lengthOnlyTextTypes = map[string]bool{
 }
 
 // validateFn returns the validation method name to call on a field of type
-// goTypeName: ValidateV1 (length only) for a plain shared text type, Validate
-// (length + CPMI charset) for the "_CPMI" text types and every other type.
+// goTypeName: ValidateLengthOnly for a plain shared text type, Validate (length
+// + CPMI charset) for the "_CPMI" text types and every other type.
 func validateFn(modulesPath, goTypeName string) string {
 	if lengthOnlyTextTypes[goTypeName] {
-		return "ValidateV1"
+		return "ValidateLengthOnly"
 	}
 	return "Validate"
 }
